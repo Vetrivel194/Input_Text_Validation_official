@@ -8,6 +8,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,50 +17,56 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.surveyapplication.ui.theme.SurveyApplicationTheme
-import com.example.validation.R
 
 class LoginActivity : ComponentActivity() {
     private lateinit var databaseHelper: UserDatabaseHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         databaseHelper = UserDatabaseHelper(this)
         setContent {
-
+            SurveyApplicationTheme { // Wrap with your app theme
                 LoginScreen(this, databaseHelper)
-
+            }
         }
     }
 }
 
 @Composable
 fun LoginScreen(context: Context, databaseHelper: UserDatabaseHelper) {
-
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var error by remember { mutableStateOf("") }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(Color.White),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
-        Image(painterResource(id = R.drawable.survey_login), contentDescription = "")
+        Image(
+            painter = painterResource(id = R.drawable.survey_login), // Use 'painter' instead of 'painterResource(id = ...)'
+            contentDescription = ""
+        )
 
         Text(
+            text = "Login",
             fontSize = 36.sp,
             fontWeight = FontWeight.ExtraBold,
             fontFamily = FontFamily.Cursive,
-            color = Color(0xFF25b897),
-            text = "Login"
+            color = Color(0xFF25b897)
         )
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -76,9 +84,18 @@ fun LoginScreen(context: Context, databaseHelper: UserDatabaseHelper) {
             onValueChange = { password = it },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier
-                .padding(10.dp)
-                .width(280.dp)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardActions = KeyboardActions(onDone = { /* Handle password submission */ }),
+            singleLine = true,
+            isError = password.isBlank(), // Example error condition
+            modifier = Modifier.run {
+                semantics {
+
+                    "Password input field".also { contentDescription = it }
+                        }
+                        .padding(10.dp)
+                        .width(280.dp)
+            }
         )
 
         if (error.isNotEmpty()) {
@@ -91,33 +108,27 @@ fun LoginScreen(context: Context, databaseHelper: UserDatabaseHelper) {
 
         Button(
             onClick = {
-                if (username.isNotEmpty() && password.isNotEmpty()) {
-                    val user = databaseHelper.getUserByUsername(username)
-                    if (user != null && user.password == password) {
-                        error = "Successfully log in"
-                        context.startActivity(
-                            Intent(
-                                context,
-                                MainActivity::class.java
-                            )
-                        )
-                        //onLoginSuccess()
+                when {
+                    username.isEmpty() || password.isEmpty() -> {
+                        error = "Please fill all fields"
                     }
-                    if (user != null && user.password == "admin") {
-                        error = "Successfully log in"
-                        context.startActivity(
-                            Intent(
-                                context,
-                                AdminActivity::class.java
-                            )
-                        )
+                    else -> {
+                        val user = databaseHelper.getUserByUsername(username)
+                        when {
+                            user != null && user.password == password -> {
+                                error = "Successfully logged in"
+                                context.startActivity(
+                                    Intent(
+                                        context,
+                                        MainActivity::class.java
+                                    )
+                                )
+                            }
+                            else -> {
+                                error = "Invalid username or password"
+                            }
+                        }
                     }
-                    else {
-                        error =  "Invalid username or password"
-                    }
-
-                } else {
-                    error = "Please fill all fields"
                 }
             },
             colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF84adb8)),
@@ -125,26 +136,29 @@ fun LoginScreen(context: Context, databaseHelper: UserDatabaseHelper) {
         ) {
             Text(text = "Login")
         }
-        Row {
-            TextButton(onClick = {context.startActivity(
-                Intent(
-                    context,
-                    RegisterActivity::class.java
-                )
-            )}
-            )
-            { Text(color = Color(0xFF25b897),text = "Register") }
+        Row(
+            modifier = Modifier.padding(top = 16.dp), // Add padding to the Row
+            horizontalArrangement = Arrangement.SpaceBetween, // Add horizontal arrangement
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             TextButton(onClick = {
-            })
+                context.startActivity(
+                    Intent(
+                        context,
+                        RegisterActivity::class.java
+                    )
+                )
+            }) {
+                Text(color = Color(0xFF25b897), text = "Register")
+            }
 
-            {
-                Spacer(modifier = Modifier.width(60.dp))
-                Text(color = Color(0xFF25b897),text = "Forget password?")
+            TextButton(onClick = {
+                // Add action for forget password
+            }) {
+                Text(color = Color(0xFF25b897), text = "Forget password?")
             }
         }
     }
 }
-private fun startMainPage(context: Context) {
-    val intent = Intent(context, MainActivity::class.java)
-    ContextCompat.startActivity(context, intent, null)
-}
+
+// Removed the unused function 'startMainPage'

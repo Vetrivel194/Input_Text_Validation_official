@@ -19,7 +19,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.surveyapplication.ui.theme.SurveyApplicationTheme
-import com.example.validation.R
 
 class MainActivity : ComponentActivity() {
     private lateinit var databaseHelper: SurveyDatabaseHelper

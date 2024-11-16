@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.surveyapplication.ui.theme.SurveyApplicationTheme
-import com.example.validation.R
 
 class RegisterActivity : ComponentActivity() {
     private lateinit var databaseHelper: UserDatabaseHelper
